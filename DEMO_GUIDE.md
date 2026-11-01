@@ -28,7 +28,7 @@ What to say:
 
 > “I hit a confusing first-use case: a request to a free route was refused with zero spent because a generic budget hold exceeded the key's allowance. The hold mechanism is documented. My feedback is that the UI could explain this before a new user gets a payment-related error.”
 
-Show [the saved direct error](evidence/direct-free-budget-repro.json). Point to `limit_usd`, `spent_usd` and `held_usd`. Do not describe the hold as money Antseed charged or claim a new billing vulnerability. The app now shows those values in plain language if it receives that error. It does not change key limits.
+Show [the saved direct error](evidence/direct-free-budget-repro.json). Point to `limit_usd`, `spent_usd` and `held_usd`. This error came from the gateway path; a demo connected directly to the buyer has no gateway-key budget check and will not reproduce it. Do not describe the hold as money Antseed charged or claim a new billing vulnerability. The app now shows those values in plain language if it receives that error. It does not change key limits.
 
 ## What was confusing about model selection?
 
