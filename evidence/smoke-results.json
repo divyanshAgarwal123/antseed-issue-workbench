@@ -1,0 +1,292 @@
+{
+  "run_at_utc": "2026-11-01T20:21:51.949139+00:00",
+  "catalog_count": 591,
+  "cases": {
+    "chat_completion": {
+      "status": 200,
+      "seconds": 1.956,
+      "peer": "d19ffae0e85b5230422019926b2f37ec0f1f41f3",
+      "body": {
+        "service_tier": "default",
+        "id": "chatcmpl-RWCIM0P73aGFXs7uv39akfDQ",
+        "object": "chat.completion",
+        "created": 1793564494,
+        "model": "openai-gpt-oss-120b",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "CHAT_OK",
+              "reasoning_content": null,
+              "name": null,
+              "tool_calls": []
+            },
+            "finish_reason": "stop",
+            "logprobs": null
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 60,
+          "completion_tokens": 21,
+          "total_tokens": 81
+        },
+        "cost": {
+          "usd": 0,
+          "diem": 1.05e-05
+        },
+        "venice_parameters": {
+          "strip_thinking_response": false,
+          "disable_thinking": true,
+          "enable_e2ee": true,
+          "enable_web_search": "off",
+          "enable_web_scraping": false,
+          "enable_web_citations": false,
+          "include_search_results_in_stream": false,
+          "include_venice_system_prompt": false,
+          "enable_x_search": false,
+          "web_search_citations": [],
+          "return_search_results_as_documents": false
+        }
+      },
+      "passed": true,
+      "requested_model": "d19ffae0e85b5230422019926b2f37ec0f1f41f3@openai-gpt-oss-120b"
+    },
+    "responses_api": {
+      "status": 200,
+      "seconds": 1.664,
+      "peer": "73b4c9335fa239f9c6df3d28d5bf5d3cdf4de736",
+      "body": {
+        "id": "chatcmpl-aOWVxBFLiwDQSDFoQd3MkGyY",
+        "object": "response",
+        "model": "xiaomi-mimo-v2-6-flash",
+        "status": "completed",
+        "created_at": 1793564497,
+        "output": [
+          {
+            "type": "message",
+            "id": "msg_chatcmpl-aOWVxBFLiwDQSDFoQd3MkGyY_1",
+            "role": "assistant",
+            "status": "completed",
+            "content": [
+              {
+                "type": "output_text",
+                "text": "RESPONSES_OK",
+                "annotations": []
+              }
+            ]
+          }
+        ],
+        "output_text": "RESPONSES_OK",
+        "end_turn": false,
+        "usage": {
+          "input_tokens": 1673,
+          "output_tokens": 18,
+          "total_tokens": 1691,
+          "input_tokens_details": {
+            "cached_tokens": 1664
+          }
+        }
+      },
+      "passed": true,
+      "requested_model": "73b4c9335fa239f9c6df3d28d5bf5d3cdf4de736@mimo-v2.6-flash"
+    },
+    "anthropic_messages": {
+      "status": 200,
+      "seconds": 1.165,
+      "peer": "73b4c9335fa239f9c6df3d28d5bf5d3cdf4de736",
+      "body": {
+        "id": "chatcmpl-aqESPbDhoJDhLDRBfY3JGRBr",
+        "type": "message",
+        "role": "assistant",
+        "model": "xiaomi-mimo-v2-6-flash",
+        "content": [
+          {
+            "type": "text",
+            "text": "MESSAGES_OK"
+          }
+        ],
+        "stop_reason": "end_turn",
+        "stop_sequence": null,
+        "usage": {
+          "input_tokens": 9,
+          "output_tokens": 15,
+          "cache_read_input_tokens": 1664
+        }
+      },
+      "passed": true,
+      "requested_model": "73b4c9335fa239f9c6df3d28d5bf5d3cdf4de736@mimo-v2.6-flash"
+    },
+    "json_mode": {
+      "status": 200,
+      "seconds": 1.952,
+      "peer": "73b4c9335fa239f9c6df3d28d5bf5d3cdf4de736",
+      "body": {
+        "service_tier": "default",
+        "id": "chatcmpl-a8i7uQgIhYpFIDOZe3IrYFVC",
+        "object": "chat.completion",
+        "created": 1793564500,
+        "model": "xiaomi-mimo-v2-6-flash",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "{\"status\":\"JSON_OK\"}",
+              "reasoning_content": null,
+              "name": null,
+              "tool_calls": null
+            },
+            "finish_reason": "stop",
+            "logprobs": null
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1685,
+          "completion_tokens": 9,
+          "total_tokens": 1694,
+          "prompt_tokens_details": {
+            "cached_tokens": 1632
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        }
+      },
+      "passed": true,
+      "requested_model": "73b4c9335fa239f9c6df3d28d5bf5d3cdf4de736@mimo-v2.6-flash"
+    },
+    "tool_call": {
+      "status": 200,
+      "seconds": 1.476,
+      "peer": "73b4c9335fa239f9c6df3d28d5bf5d3cdf4de736",
+      "body": {
+        "service_tier": "default",
+        "id": "chatcmpl-q3wMJI0HN3OWv5uMCAfK9RU7",
+        "object": "chat.completion",
+        "created": 1793564503,
+        "model": "xiaomi-mimo-v2-6-flash",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "",
+              "reasoning_content": null,
+              "name": null,
+              "tool_calls": [
+                {
+                  "id": "call-9c574e11-83fa-41bd-b9f2-e212f77b3b83",
+                  "type": "function",
+                  "function": {
+                    "name": "add",
+                    "arguments": "{\"b\":9,\"a\":7}"
+                  }
+                }
+              ]
+            },
+            "finish_reason": "tool_calls",
+            "logprobs": null
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1761,
+          "completion_tokens": 25,
+          "total_tokens": 1786,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        }
+      },
+      "passed": true,
+      "requested_model": "73b4c9335fa239f9c6df3d28d5bf5d3cdf4de736@mimo-v2.6-flash"
+    },
+    "streaming": {
+      "status": 200,
+      "seconds": 1.924,
+      "peer": "fc36cdd13d21335bc8e10eed79583754d2e48842",
+      "body": "data: {\"choices\":[{\"delta\":{\"content\":\"\",\"reasoning_content\":\"\",\"role\":\"assistant\"},\"index\":0}],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":null}\n\ndata: {\"choices\":[{\"delta\":{\"content\":\"\",\"reasoning_content\":\"The\",\"role\":\"assistant\"},\"index\":0}],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":null}\n\ndata: {\"choices\":[{\"delta\":{\"content\":\"\",\"reasoning_content\":\" user wants me to reply\",\"role\":\"assistant\"},\"index\":0}],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":null}\n\ndata: {\"choices\":[{\"delta\":{\"content\":\"\",\"reasoning_content\":\" with exactly \\\"\",\"role\":\"assistant\"},\"index\":0}],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":null}\n\ndata: {\"choices\":[{\"delta\":{\"content\":\"\",\"reasoning_content\":\"STREAM_OK\\\". This\",\"role\":\"assistant\"},\"index\":0}],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":null}\n\ndata: {\"choices\":[{\"delta\":{\"content\":\"\",\"reasoning_content\":\" is a simple instruction-f\",\"role\":\"assistant\"},\"index\":0}],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":null}\n\ndata: {\"choices\":[{\"delta\":{\"content\":\"\",\"reasoning_content\":\"ollowing request\",\"role\":\"assistant\"},\"index\":0}],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":null}\n\ndata: {\"choices\":[{\"delta\":{\"content\":\"\",\"reasoning_content\":\". I should comply\",\"role\":\"assistant\"},\"index\":0}],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":null}\n\ndata: {\"choices\":[{\"delta\":{\"content\":\"\",\"reasoning_content\":\" exactly\",\"role\":\"assistant\"},\"index\":0}],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":null}\n\ndata: {\"choices\":[{\"delta\":{\"content\":\"\",\"reasoning_content\":\".\",\"role\":\"assistant\"},\"index\":0}],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":null}\n\ndata: {\"choices\":[{\"delta\":{\"content\":\"ST\",\"reasoning_content\":\"\",\"role\":\"assistant\"},\"index\":0}],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":null}\n\ndata: {\"choices\":[{\"delta\":{\"content\":\"REAM\",\"reasoning_content\":\"\",\"role\":\"assistant\"},\"index\":0}],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":null}\n\ndata: {\"choices\":[{\"delta\":{\"content\":\"_OK\",\"reasoning_content\":\"\",\"role\":\"assistant\"},\"index\":0}],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":null}\n\ndata: {\"choices\":[{\"delta\":{\"content\":\"\",\"reasoning_content\":\"\",\"role\":\"assistant\"},\"finish_reason\":\"stop\",\"index\":0}],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":{\"completion_tokens\":32,\"prompt_tokens\":37,\"total_tokens\":69,\"prompt_tokens_details\":{\"cached_tokens\":0},\"completion_tokens_details\":{\"reasoning_tokens\":28}}}\n\ndata: {\"choices\":[],\"created\":1793564505,\"id\":\"0217935645047505c5680dfe824b0583deb71be9fa5a1d5d4ef0b\",\"model\":\"deepseek-v4-1-flash-260910\",\"service_tier\":\"default\",\"object\":\"chat.completion.chunk\",\"usage\":{\"completion_tokens\":32,\"prompt_tokens\":37,\"total_tokens\":69,\"prompt_tokens_details\":{\"cached_tokens\":0},\"completion_tokens_details\":{\"reasoning_tokens\":28}}}\n\ndata: [DONE]\n\n",
+      "passed": true,
+      "requested_model": "fc36cdd13d21335bc8e10eed79583754d2e48842@deepseek-v4.1-flash-free"
+    },
+    "vision": {
+      "status": 200,
+      "seconds": 3.179,
+      "peer": "73b4c9335fa239f9c6df3d28d5bf5d3cdf4de736",
+      "body": {
+        "service_tier": "default",
+        "id": "chatcmpl-FZHJZFWcIwIeCDX1Tdv9sNWw",
+        "object": "chat.completion",
+        "created": 1793564509,
+        "model": "xiaomi-mimo-v2-6-flash",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": "Blue",
+              "reasoning_content": "The image shows a large blue rectangle.",
+              "name": null,
+              "tool_calls": null
+            },
+            "finish_reason": "stop",
+            "logprobs": null
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 1712,
+          "completion_tokens": 12,
+          "total_tokens": 1724,
+          "prompt_tokens_details": {
+            "cached_tokens": 1632
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 11
+          }
+        }
+      },
+      "passed": true,
+      "requested_model": "73b4c9335fa239f9c6df3d28d5bf5d3cdf4de736@mimo-v2.6-flash"
+    },
+    "pinned_peer": {
+      "status": 200,
+      "seconds": 1.568,
+      "peer": "fc36cdd13d21335bc8e10eed79583754d2e48842",
+      "body": {
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "content": "PINNED_OK",
+              "reasoning_content": "The user wants me to reply with exactly \"PINNED_OK\". This is a simple instruction. I should comply exactly, no extra text.",
+              "role": "assistant"
+            }
+          }
+        ],
+        "created": 1793564511,
+        "id": "0217935645105105c5680dfe824b0583deb71be9fa5a1d5268829",
+        "model": "deepseek-v4-1-flash-260910",
+        "service_tier": "default",
+        "object": "chat.completion",
+        "usage": {
+          "completion_tokens": 34,
+          "prompt_tokens": 38,
+          "total_tokens": 72,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 29
+          }
+        }
+      },
+      "passed": true,
+      "requested_model": "fc36cdd13d21335bc8e10eed79583754d2e48842@deepseek-v4.1-flash-free"
+    }
+  }
+}

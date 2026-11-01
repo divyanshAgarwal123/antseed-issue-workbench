@@ -1,0 +1,56 @@
+# Antseed Issue Workbench
+
+A small app built during an independent, free-feature study of [Antseed](https://antseed.com/) on 2 November 2026. It sends a software issue to one provider for structured triage and asks another provider to review the draft. An optional screenshot can be sent to an image-input text model. The result is a draft for a human to verify.
+
+![Workbench analyzing a synthetic screenshot](evidence/workbench-vision-browser.png)
+
+## What was tested
+
+- A local Antseed buyer and gateway with an isolated, unfunded test identity
+- Live model discovery, peer selection, API-key authentication and a spend cap
+- Chat Completions, Responses, Anthropic Messages, JSON mode, tool calls, streaming, image input and peer pinning
+- A browser text flow and a browser screenshot flow using two providers
+
+The latest [eight-case probe](evidence/smoke-results.json) passed all eight checks with HTTP 200 on the tested setup. This was one short session, not an uptime or model-quality benchmark. See the [user diary](USER_JOURNEY.md), [findings](FINDINGS.md) and [evidence guide](EVIDENCE.md) for the details and limits.
+
+## Run it
+
+Install the Antseed CLI using the [official instructions](https://antseed.com/docs/install/). The study used `@antseed/cli@0.1.222` and Python 3.10. In one terminal, start your buyer:
+
+```sh
+antseed buyer start
+```
+
+In this repository, start the workbench:
+
+```sh
+python3 workbench.py
+```
+
+Open <http://127.0.0.1:18380>. The app connects to a buyer at `http://127.0.0.1:8377` by default. To use a gateway, supply its URL and your own key through the environment:
+
+```sh
+ANTSEED_BASE_URL=http://127.0.0.1:8379 \
+ANTSEED_API_KEY='your-key' \
+python3 workbench.py
+```
+
+To repeat the API probe against a running buyer, use `python3 smoke_features.py`. Both scripts use only the Python standard library. The probe overwrites `evidence/smoke-results.json`; keep a copy of the published run if you want to compare them. Set `ANTSEED_BASE_URL` and `ANTSEED_API_KEY` for a gateway.
+
+## How free peers are selected
+
+The workbench checks the live catalog for text peers advertising zero input and output price, a reputation score of at least 60, and no staking requirement. It pins each call using `peerId@model` and verifies the peer ID returned in the response. The feature probe does the same. A model name can list free and paid peers, so the model name alone is not a free-price guarantee. If a suitable peer is unavailable, the app stops rather than choosing a paid offer. Catalog prices and availability can change after discovery.
+
+Use public or synthetic examples. The app does not persist submitted text or images; requests are sent through Antseed to independent providers. The screenshot feature reads an image; it does not generate one. Model output can be incorrect.
+
+## Repository contents
+
+| Path | Purpose |
+| --- | --- |
+| `workbench.py`, `web/` | Local browser app and two-provider workflow |
+| `smoke_features.py` | Repeatable eight-case API probe |
+| `USER_JOURNEY.md` | First-person setup and use diary |
+| `FINDINGS.md` | Reproduced issue, product observations and suggested next checks |
+| `EVIDENCE.md`, `evidence/` | What each published artifact proves |
+
+The local CLI install, identity, gateway database and revoked test key are excluded from this repository. No wallet was funded, and no paid-generation, staking or seller operation was tested.

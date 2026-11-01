@@ -1,0 +1,19 @@
+# Findings from a first-user test
+
+These are product and developer-experience observations from one free-feature session on 2 November 2026. They have not been submitted to Antseed. The labels describe the strength of this evidence, not security severity or network-wide frequency.
+
+| Status | Observation | Evidence | Useful next step |
+| --- | --- | --- | --- |
+| **Reproduced** | A gateway key with a $0.01 lifetime cap rejected a request to a zero-priced route before any spend. The initial error cited a $0.30 possible in-flight hold; a direct repeat cited $0.60 held and $0.00 spent. Raising the local cap allowed the app flow with an unfunded wallet. | [First 402](evidence/workbench-budget-error.json), [direct 402](evidence/direct-free-budget-repro.json) | Explain the minimum practical cap during key creation, or exempt verifiably zero-priced routes from the generic hold if the accounting model allows it. Recheck against the current CLI before filing. |
+| **Catalog fact; UX opportunity** | `gpt-oss-120b` had free and paid peers under one model ID. A model-only request does not by itself select the advertised zero-priced peer. No incorrect charge was observed. | [Catalog snapshot](evidence/gateway-models-later.json), [pinned text result](evidence/workbench-pinned-final.json) | Make the chosen peer and price visible before a request. Document `peerId@model` pinning and consider a free-only routing setting. |
+| **Observed in this session** | Captured catalog counts moved from 588 to 603; the final repeat probe saw 591. Intermediate live counts were 602 and 604, but those responses were not saved. A fixed model list briefly left the app without an eligible free route. | [First catalog](evidence/buyer-models.json), [later catalog](evidence/gateway-models-later.json), [repeat probe](evidence/smoke-results.json) | Offer an “available to me now” filter and a model-unavailable response that names eligible alternatives. Measure how often this blocks new users before prioritizing a change. |
+| **Needs repetition** | One Mimo text request exceeded the app's 60-second timeout, one review returned HTTP 200 with no visible text, and one draft contradicted its input. Later requests succeeded. | First-person account in [USER_JOURNEY.md](USER_JOURNEY.md); the raw timeout and empty-response logs were not retained | Repeat with recorded request IDs and provider IDs. Separate routing delays from model-output quality. |
+| **Needs repetition** | On a nondefault buyer port, `buyer activity --json` looked for 8377 even though `buyer status --json` found the buyer on 18377. | First-person account in [USER_JOURNEY.md](USER_JOURNEY.md); terminal output was not retained | Retry on the current CLI and save both commands' output before filing. |
+
+## What worked
+
+The revised [feature probe](evidence/smoke-results.json) passed eight basic checks against live, pinned, zero-priced peers: Chat Completions, Responses, Anthropic Messages, JSON mode, tool calling, streaming, image understanding and peer pinning. The [browser text flow](evidence/workbench-browser.png) and [browser image flow](evidence/workbench-vision-browser.png) completed. An unauthenticated gateway catalog call returned [HTTP 401](evidence/gateway-unauth-models.json), while authenticated workbench calls completed.
+
+## A realistic way to contribute
+
+This work suggests a small developer-onboarding pilot: have a few new developers install Antseed and complete one useful task, measure time to first successful request, record model-selection and error-recovery friction, then turn confirmed problems into issue reports, documentation improvements or example-app fixes. The workbench and evidence format can be the starting point. Any public provider comparison would need many more repeated runs and a defined cost and quality methodology.

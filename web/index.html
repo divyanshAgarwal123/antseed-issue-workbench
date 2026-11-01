@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Antseed Issue Workbench</title>
+  <style>
+    :root { color-scheme: light; font: 16px/1.5 system-ui, -apple-system, sans-serif; background: #f5f4ef; color: #20231f; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    main { max-width: 860px; margin: 0 auto; padding: 44px 22px 80px; }
+    h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; margin: 4px 0 14px; letter-spacing: -.04em; }
+    h2 { font-size: 1.15rem; margin: 0 0 12px; }
+    .eyebrow { color: #36634b; font-size: .78rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+    .intro { max-width: 680px; color: #535a54; margin: 0 0 24px; }
+    .card { background: #fff; border: 1px solid #ddded8; border-radius: 14px; padding: 22px; margin-top: 18px; box-shadow: 0 7px 22px #20231f0b; }
+    label { display: block; font-weight: 700; margin: 0 0 8px; }
+    textarea { width: 100%; min-height: 175px; padding: 14px; resize: vertical; border: 1px solid #aeb7ae; border-radius: 9px; font: inherit; color: inherit; }
+    textarea:focus, input:focus { outline: 2px solid #3f8060; outline-offset: 2px; }
+    .row { display: flex; gap: 14px; align-items: end; flex-wrap: wrap; margin-top: 17px; }
+    .upload { flex: 1; min-width: 220px; }
+    .upload small, .hint { display: block; color: #646e66; font-weight: 400; font-size: .84rem; margin-top: 5px; }
+    input[type=file] { max-width: 100%; }
+    button { background: #174e33; border: 1px solid #174e33; color: #fff; border-radius: 8px; padding: 11px 19px; font: inherit; font-weight: 700; cursor: pointer; }
+    button:hover { background: #286844; }
+    button:disabled { opacity: .55; cursor: wait; }
+    button.secondary { background: transparent; color: #174e33; padding: 6px 0; border: 0; font-weight: 600; }
+    .status { display: inline-flex; gap: 8px; align-items: center; color: #315c43; font-size: .9rem; font-weight: 650; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #3f8060; }
+    .error { color: #a0281d; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .result { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; font: 14px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .meta { margin: 12px 0 0; color: #637066; font-size: .83rem; }
+    footer { color: #68716a; font-size: .83rem; margin-top: 26px; }
+    @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } main { padding-top: 28px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">Antseed field test · free models</div>
+    <h1>Issue Workbench</h1>
+    <p class="intro">Describe a software issue and optionally attach a screenshot. One Antseed model organizes the evidence; a second checks the analysis for gaps. This is a test app, so use public or synthetic examples.</p>
+    <div id="availability" class="status"><span class="dot"></span><span>Checking local Antseed buyer…</span></div>
+    <section class="card">
+      <label for="issue">Issue description</label>
+      <textarea id="issue" maxlength="5000" placeholder="What happened? What did you expect? How can someone reproduce it?"></textarea>
+      <button id="example" class="secondary" type="button">Load a public example</button>
+      <div class="row">
+        <div class="upload">
+          <label for="image">Screenshot (optional)</label>
+          <input id="image" type="file" accept="image/*">
+          <small>Up to 1 MB. The image is sent to an Antseed provider.</small>
+        </div>
+        <button id="analyze" type="button">Analyze issue</button>
+      </div>
+      <p id="message" class="hint" role="status"></p>
+    </section>
+    <section id="results" class="grid" hidden>
+      <div class="card">
+        <h2>Draft analysis · verify against the report</h2>
+        <pre id="findings" class="result"></pre>
+        <p id="analyst-meta" class="meta"></p>
+      </div>
+      <div class="card">
+        <h2>Second-model review</h2>
+        <pre id="review" class="result"></pre>
+        <p id="reviewer-meta" class="meta"></p>
+      </div>
+    </section>
+    <footer>Runs locally. Model requests go through your Antseed buyer or gateway to independent providers. No input is stored by this app. Model output can be wrong; verify it before acting.</footer>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
