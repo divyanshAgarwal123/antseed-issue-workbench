@@ -1,0 +1,11 @@
+This is the Antseed Issue Workbench, a small app built while testing Antseed as a new developer.
+
+Start with a software issue, and optionally attach a screenshot.
+
+One model structures the observations and next checks. A second model reviews the draft for unsupported claims and missing evidence.
+
+The screenshot flow uses a free model that accepts images. Here, it identifies the synthetic blue rectangle.
+
+The app discovers eligible free peers, pins each request, and shows which provider answered.
+
+The repository includes eight passing API checks, saved responses, screenshots, and a reproduced gateway spend cap error. Model outputs remain drafts to verify.

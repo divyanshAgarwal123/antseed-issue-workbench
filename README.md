@@ -1,15 +1,21 @@
 # Antseed Issue Workbench
 
-A small app built during an independent, free-feature study of [Antseed](https://antseed.com/) on 2 November 2026. It sends a software issue to one provider for structured triage and asks another provider to review the draft. An optional screenshot can be sent to an image-input text model. The result is a draft for a human to verify.
+A small app built during an independent, free-feature study of [Antseed](https://antseed.com/) on 2 November 2026. It sends a software issue to one model for structured triage and asks a second model to review the draft. The models can be served by the same or different peers. An optional screenshot can be sent to an image-input text model. The result is a draft for a human to verify.
 
-![Workbench analyzing a synthetic screenshot](evidence/workbench-vision-browser.png)
+## 46-second walkthrough
+
+See the issue input, two-model analysis, screenshot flow, provider metadata and published evidence. This is an edited tour of fresh app captures with synthetic input, captions and narration; request waits are omitted.
+
+https://github.com/user-attachments/assets/6d79aa73-44f2-4612-92e9-8cd31c4af090
+
+[Download the MP4](media/workbench-walkthrough.mp4) · [Read the transcript](media/transcript.txt)
 
 ## What was tested
 
 - A local Antseed buyer and gateway with an isolated, unfunded test identity
 - Live model discovery, peer selection, API-key authentication and a spend cap
 - Chat Completions, Responses, Anthropic Messages, JSON mode, tool calls, streaming, image input and peer pinning
-- A browser text flow and a browser screenshot flow using two providers
+- A browser text flow and a browser screenshot flow using two model calls
 
 The latest [eight-case probe](evidence/smoke-results.json) passed all eight checks with HTTP 200 on the tested setup. This was one short session, not an uptime or model-quality benchmark. See the [user diary](USER_JOURNEY.md), [findings](FINDINGS.md) and [evidence guide](EVIDENCE.md) for the details and limits.
 
@@ -47,10 +53,11 @@ Use public or synthetic examples. The app does not persist submitted text or ima
 
 | Path | Purpose |
 | --- | --- |
-| `workbench.py`, `web/` | Local browser app and two-provider workflow |
+| `workbench.py`, `web/` | Local browser app and two-model workflow |
 | `smoke_features.py` | Repeatable eight-case API probe |
 | `USER_JOURNEY.md` | First-person setup and use diary |
 | `FINDINGS.md` | Reproduced issue, product observations and suggested next checks |
 | `EVIDENCE.md`, `evidence/` | What each published artifact proves |
+| `media/` | Short walkthrough, transcript and production notes |
 
 The local CLI install, identity, gateway database and revoked test key are excluded from this repository. No wallet was funded, and no paid-generation, staking or seller operation was tested.

@@ -4,6 +4,7 @@ This is a record of one user's free-feature test on 2 November 2026 (IST), using
 
 | Claim | Published evidence | What it shows |
 | --- | --- | --- |
+| A fresh text flow and screenshot flow completed for the walkthrough | [walkthrough video](media/workbench-walkthrough.mp4), [production notes](media/README.md) | Edited, narrated app captures from two additional successful runs. Waits are omitted; the video is a tour, not a continuous recording or a reliability benchmark. |
 | Eight API features worked in the repeat run | [smoke-results.json](evidence/smoke-results.json) | Timestamped HTTP status, response peer, pinned model, pass check and raw response for each case. All eight checks passed. |
 | The browser app completed a text issue and an image-input issue | [text screenshot](evidence/workbench-browser.png), [image screenshot](evidence/workbench-vision-browser.png), [synthetic image](evidence/vision-test.png) | Visible browser output. The screenshots predate the final peer-pinning code change. |
 | The final workbench completed both calls to selected peers | [pinned text response](evidence/workbench-pinned-final.json), [pinned image response](evidence/workbench-pinned-vision-final.json) | Structured analysis, review, response peer IDs and timings after pinning was added. |
