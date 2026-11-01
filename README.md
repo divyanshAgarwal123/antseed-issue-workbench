@@ -1,5 +1,7 @@
 # Antseed Issue Workbench
 
+For a practical meeting-notes workflow, see [Meeting Actions](https://github.com/divyanshAgarwal123/antseed-meeting-actions): review extracted tasks, assign missing owners and dates, then export a CSV, calendar file and follow-up draft. This repository preserves the original Antseed field study and its evidence.
+
 A small app built during an independent, free-feature study of [Antseed](https://antseed.com/) on 2 November 2026. It sends a software issue to one model for structured triage and asks a second model to review the draft. The models can be served by the same or different peers. An optional screenshot can be sent to an image-input text model. The result is a draft for a human to verify.
 
 ## Current app
