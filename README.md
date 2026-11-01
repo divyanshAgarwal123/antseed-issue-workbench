@@ -2,9 +2,17 @@
 
 A small app built during an independent, free-feature study of [Antseed](https://antseed.com/) on 2 November 2026. It sends a software issue to one model for structured triage and asks a second model to review the draft. The models can be served by the same or different peers. An optional screenshot can be sent to an image-input text model. The result is a draft for a human to verify.
 
-## 46-second walkthrough
+## Current app
 
-See the issue input, two-model analysis, screenshot flow, provider metadata and published evidence. This is an edited tour of fresh app captures with synthetic input, captions and narration; request waits are omitted.
+The updated interface shows eligible free offers before a run, streams progress through both steps, and renders the analysis as readable sections. Automatic selection can try one alternate free offer; a failed review keeps the first draft and can be retried on its own. A clearly labelled recorded example works without Antseed running, and a completed run can be downloaded as JSON.
+
+![Updated workbench](evidence/workbench-v2.png)
+
+Use the [demo guide](DEMO_GUIDE.md) for a two-minute walkthrough, the spend-cap explanation and questions to prepare for.
+
+## Original 46-second walkthrough
+
+See the issue input, two-model analysis, screenshot flow, provider metadata and published evidence. This video records the initial interface; the screenshot above shows the current version. It is an edited tour of app captures with synthetic input, captions and narration; request waits are omitted.
 
 https://github.com/user-attachments/assets/6d79aa73-44f2-4612-92e9-8cd31c4af090
 
@@ -45,7 +53,13 @@ To repeat the API probe against a running buyer, use `python3 smoke_features.py`
 
 ## How free peers are selected
 
-The workbench checks the live catalog for text peers advertising zero input and output price, a reputation score of at least 60, and no staking requirement. It pins each call using `peerId@model` and verifies the peer ID returned in the response. The feature probe does the same. A model name can list free and paid peers, so the model name alone is not a free-price guarantee. If a suitable peer is unavailable, the app stops rather than choosing a paid offer. Catalog prices and availability can change after discovery.
+The workbench checks the live catalog for text peers advertising zero input and output price, a reputation score of at least 60, and no staking requirement. It prefers previously tested models, then considers other eligible offers. You can select a particular offer or keep automatic selection. It pins each call using `peerId@model` and verifies the peer ID returned in the response. The feature probe also pins its requests. A model name can list free and paid peers, so the model name alone is not a free-price guarantee. If a suitable peer is unavailable, the app stops rather than choosing a paid offer. Catalog prices and availability can change after discovery. Free quotas can still be exhausted.
+
+Offers must support Chat Completions. Explicitly specialised non-conversational categories, such as asset search, are excluded from this workflow. The provider's advertised service ID is also considered when ranking preferences, so a changed catalog alias does not automatically discard a familiar offer.
+
+The analyst can receive a screenshot. The reviewer receives the report and written analysis, not the image. Two different model names are used, but their peers may be the same. A second review has not been shown here to improve accuracy.
+
+To run the offline selection, recovery and HTTP-stream checks, use `python3 -m unittest -v`. These tests use local fixtures and make no model calls.
 
 Use public or synthetic examples. The app does not persist submitted text or images; requests are sent through Antseed to independent providers. The screenshot feature reads an image; it does not generate one. Model output can be incorrect.
 
@@ -56,6 +70,7 @@ Use public or synthetic examples. The app does not persist submitted text or ima
 | `workbench.py`, `web/` | Local browser app and two-model workflow |
 | `smoke_features.py` | Repeatable eight-case API probe |
 | `USER_JOURNEY.md` | First-person setup and use diary |
+| `DEMO_GUIDE.md` | Plain-language demo script and questions to prepare for |
 | `FINDINGS.md` | Reproduced issue, product observations and suggested next checks |
 | `EVIDENCE.md`, `evidence/` | What each published artifact proves |
 | `media/` | Short walkthrough, transcript and production notes |

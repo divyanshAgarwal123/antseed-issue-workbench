@@ -2,6 +2,8 @@
 
 These are product and developer-experience observations from one free-feature session on 2 November 2026. They have not been submitted to Antseed. The labels describe the strength of this evidence, not security severity or network-wide frequency.
 
+Follow-up documentation check: Antseed's [budget guide](https://antseed.com/docs/gateway/budgets/) explicitly describes maximum-per-request holds and early refusals under small limits. The spend-cap observation below is therefore documented budget behavior encountered on a free route, with a first-use UX question. It is not evidence of an incorrect charge or a new billing vulnerability. The model-name problem also exposed a limitation in this app's original fixed candidate list; the revised app now discovers eligible offers dynamically.
+
 | Status | Observation | Evidence | Useful next step |
 | --- | --- | --- | --- |
 | **Reproduced** | A gateway key with a $0.01 lifetime cap rejected a request to a zero-priced route before any spend. The initial error cited a $0.30 possible in-flight hold; a direct repeat cited $0.60 held and $0.00 spent. Raising the local cap allowed the app flow with an unfunded wallet. | [First 402](evidence/workbench-budget-error.json), [direct 402](evidence/direct-free-budget-repro.json) | Explain the minimum practical cap during key creation, or exempt verifiably zero-priced routes from the generic hold if the accounting model allows it. Recheck against the current CLI before filing. |

@@ -4,6 +4,7 @@ This is a record of one user's free-feature test on 2 November 2026 (IST), using
 
 | Claim | Published evidence | What it shows |
 | --- | --- | --- |
+| The improved interface completed live text and image runs | [current UI](evidence/workbench-v2.png), [text export](evidence/workbench-v2-text.json), [image export](evidence/workbench-v2-image.json) | Live run mode, completed timestamps, advertised free offers, pinned requests, actual response peers, attempts and results exported through the app. |
 | A fresh text flow and screenshot flow completed for the walkthrough | [walkthrough video](media/workbench-walkthrough.mp4), [production notes](media/README.md) | Edited, narrated app captures from two additional successful runs. Waits are omitted; the video is a tour, not a continuous recording or a reliability benchmark. |
 | Eight API features worked in the repeat run | [smoke-results.json](evidence/smoke-results.json) | Timestamped HTTP status, response peer, pinned model, pass check and raw response for each case. All eight checks passed. |
 | The browser app completed a text issue and an image-input issue | [text screenshot](evidence/workbench-browser.png), [image screenshot](evidence/workbench-vision-browser.png), [synthetic image](evidence/vision-test.png) | Visible browser output. The screenshots predate the final peer-pinning code change. |
@@ -18,5 +19,7 @@ This is a record of one user's free-feature test on 2 November 2026 (IST), using
 The screenshots show model-generated analysis of a *reported* software issue. They do not reproduce that underlying issue. One slow request, one empty review and a nondefault-port CLI mismatch were observed during the session, but raw terminal logs for those events were not retained. They remain follow-up questions, not confirmed product defects.
 
 The catalog snapshots show advertised offers at their capture times. They do not guarantee later price, provider availability, model identity or network-wide reliability. The eight-case probe checks basic behavior once; it is not a quality or security audit. No paid generation, wallet funding, staking, seller flow or authenticated console workflow was tested.
+
+The revised app also has 12 offline tests for selection, alias changes in the app and API probe, partial results, review-only retries, budget errors, recorded playback and HTTP progress events. Browser checks covered both live flows, JSON download, manual selection, a 390-pixel layout without horizontal overflow, and stale-result clearing. A separate local fixture simulated a budget error to check the error UI and draft preservation; that simulation is not additional live Antseed evidence.
 
 Before publication, the selected artifacts were checked for local home paths, email addresses, bearer tokens and Antseed API-key strings. Local identity files, gateway databases, runtime packages and the revoked test key were excluded.

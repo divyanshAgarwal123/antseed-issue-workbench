@@ -1,0 +1,120 @@
+{
+  "findings": {
+    "summary": "User reports that in a synthetic test the export button indicates success, yet the resulting downloaded file does not contain the blue rectangle that is visible in the preview.",
+    "observed": [
+      "Export button reports success.",
+      "Downloaded file is missing the blue rectangle shown in the preview."
+    ],
+    "next_checks": [
+      "Verify that the preview rendering and the export pipeline use the same data source and rendering code.",
+      "Check if any post‑processing steps (e.g., image compression, format conversion) drop the blue rectangle.",
+      "Inspect the export logs for warnings or errors that might indicate a rendering issue.",
+      "Compare the exported file with the preview at the pixel level to identify differences.",
+      "Confirm that the test environment (e.g., browser, OS) matches the environment used for the preview."
+    ],
+    "uncertainty": "It is unclear whether the discrepancy is due to a bug in the export implementation, a data handling issue, or an environment‑specific rendering difference."
+  },
+  "analyst": {
+    "status": 200,
+    "seconds": 6.92,
+    "peer": "d19ffae0e85b5230422019926b2f37ec0f1f41f3",
+    "model": "openai-gpt-oss-120b",
+    "usage": {
+      "prompt_tokens": 155,
+      "completion_tokens": 270,
+      "total_tokens": 425
+    }
+  },
+  "analyst_offer": {
+    "id": "d19ffae0e85b5230422019926b2f37ec0f1f41f3@openai/gpt-oss-120b",
+    "model": "openai/gpt-oss-120b",
+    "peer": "d19ffae0e85b5230422019926b2f37ec0f1f41f3",
+    "service_id": "gpt-oss-120b",
+    "provider": "Super Seeder",
+    "reputation": 71.8,
+    "accepts_image": false,
+    "input_usd_per_million": 0,
+    "output_usd_per_million": 0
+  },
+  "analyst_model": "openai/gpt-oss-120b",
+  "review": "- The draft does not mention the original report's instruction to \"record the failure,\" which may be a missing action.\n- The draft's \"next_checks\" include \"Compare the exported file with the preview at the pixel level,\" which is a useful but potentially time-consuming check that could be framed as a suggestion rather than a required step.\n- The draft introduces \"environment-specific rendering difference\" as a possibility, but the original report does not mention any environment details, so this may be an unsupported assertion.\n\n(No other substantive concerns.)",
+  "reviewer": {
+    "status": 200,
+    "seconds": 2.22,
+    "peer": "d19ffae0e85b5230422019926b2f37ec0f1f41f3",
+    "model": "mistral-small-3-2-24b-instruct",
+    "usage": {
+      "prompt_tokens": 317,
+      "completion_tokens": 110,
+      "total_tokens": 427
+    }
+  },
+  "reviewer_offer": {
+    "id": "d19ffae0e85b5230422019926b2f37ec0f1f41f3@mistral-small-3-2-24b-instruct",
+    "model": "mistral-small-3-2-24b-instruct",
+    "peer": "d19ffae0e85b5230422019926b2f37ec0f1f41f3",
+    "service_id": "mistral-small-3-2-24b-instruct",
+    "provider": "Super Seeder",
+    "reputation": 71.8,
+    "accepts_image": false,
+    "input_usd_per_million": 0,
+    "output_usd_per_million": 0
+  },
+  "review_error": null,
+  "attempts": [
+    {
+      "role": "analyst",
+      "offer": {
+        "id": "d19ffae0e85b5230422019926b2f37ec0f1f41f3@openai/gpt-oss-120b",
+        "model": "openai/gpt-oss-120b",
+        "peer": "d19ffae0e85b5230422019926b2f37ec0f1f41f3",
+        "service_id": "gpt-oss-120b",
+        "provider": "Super Seeder",
+        "reputation": 71.8,
+        "accepts_image": false,
+        "input_usd_per_million": 0,
+        "output_usd_per_million": 0
+      },
+      "status": 200,
+      "seconds": 6.92,
+      "peer": "d19ffae0e85b5230422019926b2f37ec0f1f41f3",
+      "model": "openai-gpt-oss-120b",
+      "usage": {
+        "prompt_tokens": 155,
+        "completion_tokens": 270,
+        "total_tokens": 425
+      }
+    },
+    {
+      "role": "reviewer",
+      "offer": {
+        "id": "d19ffae0e85b5230422019926b2f37ec0f1f41f3@mistral-small-3-2-24b-instruct",
+        "model": "mistral-small-3-2-24b-instruct",
+        "peer": "d19ffae0e85b5230422019926b2f37ec0f1f41f3",
+        "service_id": "mistral-small-3-2-24b-instruct",
+        "provider": "Super Seeder",
+        "reputation": 71.8,
+        "accepts_image": false,
+        "input_usd_per_million": 0,
+        "output_usd_per_million": 0
+      },
+      "status": 200,
+      "seconds": 2.22,
+      "peer": "d19ffae0e85b5230422019926b2f37ec0f1f41f3",
+      "model": "mistral-small-3-2-24b-instruct",
+      "usage": {
+        "prompt_tokens": 317,
+        "completion_tokens": 110,
+        "total_tokens": 427
+      }
+    }
+  ],
+  "mode": "live",
+  "completed_at": "2026-11-01T21:08:45.505462+00:00",
+  "reviewer_model": "mistral-small-3-2-24b-instruct",
+  "input": {
+    "issue": "Synthetic test: the export button reports success, but the downloaded file is missing a blue rectangle shown in the preview. Record the failure and suggest the next checks.",
+    "has_image": false,
+    "image_name": null
+  }
+}

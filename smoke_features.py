@@ -54,22 +54,24 @@ def request(path: str, payload: dict | None = None) -> dict:
 
 
 def free_peer(models: dict, candidates: tuple[str, ...], image: bool = False) -> tuple[str, str]:
-    for name in candidates:
-        model = models.get(name, {})
-        if model.get("type") != "text":
-            continue
-        for peer in model.get("peers", []):
-            inputs = (peer.get("capabilities") or {}).get("inputs", [])
-            tier = (peer.get("freeTier") or {}).get("base") or {}
-            if (
-                peer.get("inputUsdPerMillion") == 0
-                and peer.get("outputUsdPerMillion") == 0
-                and peer.get("reputationScore", 0) >= 60
-                and not tier.get("stakersOnly", False)
-                and (not image or "image" in inputs)
-                and peer.get("peerId")
-            ):
-                return name, peer["peerId"]
+    for candidate in candidates:
+        for model in models.values():
+            if model.get("type") != "text":
+                continue
+            for peer in model.get("peers", []):
+                if candidate not in {model["id"], peer.get("serviceId")}:
+                    continue
+                inputs = (peer.get("capabilities") or {}).get("inputs", [])
+                tier = (peer.get("freeTier") or {}).get("base") or {}
+                if (
+                    peer.get("inputUsdPerMillion") == 0
+                    and peer.get("outputUsdPerMillion") == 0
+                    and peer.get("reputationScore", 0) >= 60
+                    and not tier.get("stakersOnly", False)
+                    and (not image or "image" in inputs)
+                    and peer.get("peerId")
+                ):
+                    return model["id"], peer["peerId"]
     raise RuntimeError(f"No eligible zero-priced peer is available for {candidates}.")
 
 

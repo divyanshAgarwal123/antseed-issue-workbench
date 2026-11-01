@@ -1,19 +1,16 @@
-"""A small, free-only Antseed issue-triage workbench.
-
-The server listens on localhost. Browser input is sent to the selected Antseed
-provider, so use public or synthetic examples only.
-"""
-
+"""Local Antseed issue workbench. Requests use advertised zero-priced peers."""
 from __future__ import annotations
 
+import base64
 import json
 import os
+import socket
 import time
 import urllib.error
 import urllib.request
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-
 
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
@@ -24,151 +21,221 @@ VISION_ANALYST_CANDIDATES = ("mimo-v2.6-flash", "xiaomi/mimo-v2.6-flash", "minim
 REVIEWER_CANDIDATES = ("mistral-small-3-2-24b-instruct", "deepseek-v4-flash", "deepseek-v4.1-flash-free")
 
 
+def now() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+class AntseedError(Exception):
+    def __init__(self, code: str, message: str, action: str = "Refresh offers and try again.", status: int = 502, details: dict | None = None):
+        super().__init__(message)
+        self.code, self.message, self.action = code, message, action
+        self.status, self.details = status, details or {}
+
+    def public(self) -> dict:
+        return {"code": self.code, "message": self.message, "action": self.action, "details": self.details}
+
+
 def api_key() -> str | None:
     if KEY_FILE:
-        return json.loads(Path(KEY_FILE).read_text())["apiKey"]
+        try:
+            return json.loads(Path(KEY_FILE).read_text())["apiKey"]
+        except (OSError, ValueError, KeyError) as error:
+            raise AntseedError("key_configuration", "The configured gateway key file could not be read.", "Check ANTSEED_KEY_FILE or supply ANTSEED_API_KEY on the local server.") from error
     return os.environ.get("ANTSEED_API_KEY")
+
+
+def upstream_error(status: int, data: dict) -> AntseedError:
+    error = data.get("error", {})
+    if not isinstance(error, dict):
+        error = {"message": str(error)}
+    code = error.get("code") or f"http_{status}"
+    if code == "spend_limit_reached":
+        return AntseedError(code, "The gateway blocked this request under its spending limit.",
+                            "A temporary hold can exceed a small key limit even with $0 spent. Wait for holds to settle, or review the limit with the gateway owner. A hold is not a charge.",
+                            402, error.get("limit") or {})
+    if status == 401:
+        return AntseedError(code, "The gateway did not accept the API key.", "Set a valid ANTSEED_API_KEY on the local server, then refresh offers.", 401)
+    if status == 429:
+        return AntseedError(code, "This provider is temporarily rate limited.", "Try another eligible free offer, or wait before retrying.", 429)
+    return AntseedError(code, error.get("message") or f"Antseed returned HTTP {status}.", status=status)
 
 
 def antseed_request(path: str, payload: dict | None = None) -> tuple[dict, dict]:
     headers = {"Content-Type": "application/json"}
-    key = api_key()
-    if key:
+    if key := api_key():
         headers["Authorization"] = "Bearer " + key
-    req = urllib.request.Request(
-        BASE_URL + path,
-        data=json.dumps(payload).encode() if payload is not None else None,
-        headers=headers,
-        method="POST" if payload is not None else "GET",
-    )
+    request = urllib.request.Request(BASE_URL + path, data=json.dumps(payload).encode() if payload is not None else None,
+                                     headers=headers, method="POST" if payload is not None else "GET")
     started = time.monotonic()
     try:
-        with urllib.request.urlopen(req, timeout=60) as response:
-            body = response.read()
-            status = response.status
-            response_headers = response.headers
+        with urllib.request.urlopen(request, timeout=60) as response:
+            raw, status, response_headers = response.read(), response.status, response.headers
     except urllib.error.HTTPError as error:
-        body = error.read()
-        status = error.code
-        response_headers = error.headers
-    data = json.loads(body)
-    meta = {
-        "status": status,
-        "seconds": round(time.monotonic() - started, 2),
-        "peer": response_headers.get("x-antseed-peer-id"),
-        "model": data.get("model"),
-        "usage": data.get("usage"),
-    }
+        raw, status, response_headers = error.read(), error.code, error.headers
+    except (urllib.error.URLError, TimeoutError, socket.timeout) as error:
+        timeout = isinstance(error, (TimeoutError, socket.timeout)) or isinstance(getattr(error, "reason", None), (TimeoutError, socket.timeout))
+        raise AntseedError("timeout" if timeout else "connection_failed",
+                           "The provider did not answer within 60 seconds." if timeout else "The local Antseed connection is unavailable.",
+                           "Try another eligible free offer." if timeout else "Start your Antseed buyer or gateway, check ANTSEED_BASE_URL, then refresh offers.") from error
+    try:
+        data = json.loads(raw)
+    except (ValueError, UnicodeDecodeError) as error:
+        raise AntseedError("invalid_response", "Antseed returned a response this app could not read.") from error
+    if not isinstance(data, dict):
+        raise AntseedError("invalid_response", "Antseed returned an unexpected response format.")
     if status != 200:
-        raise RuntimeError(f"Antseed HTTP {status}: {data.get('error', data)}")
-    return data, meta
+        raise upstream_error(status, data)
+    return data, {"status": status, "seconds": round(time.monotonic() - started, 2),
+                  "peer": response_headers.get("x-antseed-peer-id"), "model": data.get("model"), "usage": data.get("usage")}
 
 
-def free_offer(model: dict, require_image: bool = False) -> str | None:
-    if model.get("type") != "text":
-        return None
-    for peer in model.get("peers", []):
-        tier = peer.get("freeTier") or {}
-        inputs = (peer.get("capabilities") or {}).get("inputs", [])
-        if (
-            peer.get("inputUsdPerMillion") == 0
-            and peer.get("outputUsdPerMillion") == 0
-            and peer.get("reputationScore", 0) >= 60
-            and not (tier.get("base") or {}).get("stakersOnly", False)
-            and (not require_image or "image" in inputs)
-        ):
-            return peer.get("peerId")
-    return None
+def eligible_offers(catalog: dict) -> list[dict]:
+    offers = {}
+    for model in catalog.get("data", []):
+        if model.get("type") != "text":
+            continue
+        for peer in model.get("peers", []):
+            tier = (peer.get("freeTier") or {}).get("base") or {}
+            protocols = peer.get("protocols") or [peer.get("protocol")]
+            categories = set(peer.get("categories") or [])
+            if (peer.get("inputUsdPerMillion") != 0 or peer.get("outputUsdPerMillion") != 0
+                    or peer.get("reputationScore", 0) < 60 or tier.get("stakersOnly") or not peer.get("peerId")
+                    or "openai-chat-completions" not in protocols
+                    or (categories and not categories.intersection({"chat", "tasks", "coding", "reasoning", "agents"}))):
+                continue
+            route = f"{peer['peerId']}@{model['id']}"
+            offers[route] = {"id": route, "model": model["id"], "peer": peer["peerId"],
+                             "service_id": peer.get("serviceId"),
+                             "provider": peer.get("displayName") or peer["peerId"][:10],
+                             "reputation": round(peer["reputationScore"], 1),
+                             "accepts_image": "image" in ((peer.get("capabilities") or {}).get("inputs") or []),
+                             "input_usd_per_million": 0, "output_usd_per_million": 0}
+    return sorted(offers.values(), key=lambda offer: (offer["model"], offer["peer"]))
+
+
+def ranked(offers: list[dict], preferences: tuple[str, ...]) -> list[dict]:
+    def preference(offer):
+        names = {offer["model"], offer.get("service_id")}
+        return min((preferences.index(name) for name in names if name in preferences), default=len(preferences))
+    return sorted(offers, key=lambda offer: (preference(offer), -offer["reputation"], offer["id"]))
+
+
+def offer_pool(state: dict, role: str, image: bool = False, selected: str | None = None, avoid_model: str | None = None) -> list[dict]:
+    offers = [offer for offer in state["offers"] if (not image or offer["accepts_image"]) and offer["model"] != avoid_model]
+    if selected:
+        offers = [offer for offer in offers if offer["id"] == selected]
+    preferences = REVIEWER_CANDIDATES if role == "reviewer" else VISION_ANALYST_CANDIDATES if image else TEXT_ANALYST_CANDIDATES
+    pool = ranked(offers, preferences)
+    if not pool:
+        raise AntseedError("offer_unavailable", "No eligible free offer matches this step.",
+                           "Refresh offers, remove the screenshot, or choose Automatic. The two steps need different model names.", 409)
+    return pool[:1] if selected else pool[:2]
 
 
 def available_models() -> dict:
     catalog, _ = antseed_request("/v1/models")
-    by_id = {model["id"]: model for model in catalog.get("data", [])}
-    analyst = next((name for name in TEXT_ANALYST_CANDIDATES if free_offer(by_id.get(name, {}))), None)
-    vision_analyst = next((name for name in VISION_ANALYST_CANDIDATES if free_offer(by_id.get(name, {}), require_image=True)), None)
-    reviewers = [name for name in REVIEWER_CANDIDATES if free_offer(by_id.get(name, {}))]
-    reviewer = reviewers[0] if reviewers else None
-    return {
-        "catalog_count": len(by_id),
-        "free_text_count": sum(bool(free_offer(model)) for model in by_id.values()),
-        "analyst_model": analyst,
-        "vision_analyst_model": vision_analyst,
-        "reviewer_model": reviewer,
-        "reviewer_candidates": reviewers,
-        "vision_ready": bool(vision_analyst),
-        "free_peers": {name: free_offer(by_id[name]) for name in {analyst, *reviewers} if name},
-        "vision_peer": free_offer(by_id[vision_analyst], require_image=True) if vision_analyst else None,
+    offers = eligible_offers(catalog)
+    state = {"catalog_count": len(catalog.get("data", [])), "free_model_count": len({offer["model"] for offer in offers}),
+             "offers": offers, "checked_at": now(), "defaults": {}}
+    state["orders"] = {
+        "analyst": [offer["id"] for offer in ranked(offers, TEXT_ANALYST_CANDIDATES)],
+        "vision_analyst": [offer["id"] for offer in ranked([offer for offer in offers if offer["accepts_image"]], VISION_ANALYST_CANDIDATES)],
+        "reviewer": [offer["id"] for offer in ranked(offers, REVIEWER_CANDIDATES)],
     }
+    for name, role, image in [("analyst", "analyst", False), ("vision_analyst", "analyst", True), ("reviewer", "reviewer", False)]:
+        try:
+            state["defaults"][name] = offer_pool(state, role, image)[0]
+        except AntseedError:
+            state["defaults"][name] = None
+    return state
 
 
-def analyze(issue: str, image_data_url: str | None) -> dict:
+def validate_findings(value: dict) -> dict:
+    if (not isinstance(value, dict) or not isinstance(value.get("summary"), str) or not value["summary"].strip()
+            or not isinstance(value.get("uncertainty"), str)
+            or any(not isinstance(value.get(key), list) or not all(isinstance(item, str) for item in value[key]) for key in ("observed", "next_checks"))):
+        raise AntseedError("invalid_analysis", "The model returned an incomplete structured analysis.", "Try another eligible free model.")
+    return value
+
+
+def run_step(pool: list[dict], prompt: str | list[dict], role: str, attempts: list, emit) -> tuple[object, dict, dict]:
+    last_error = None
+    for index, offer in enumerate(pool):
+        emit({"event": "status", "stage": role, "offer": offer, "attempt": index + 1})
+        started = time.monotonic()
+        try:
+            payload = {"model": offer["id"], "messages": [{"role": "user", "content": prompt}], "max_tokens": 750, "stream": False}
+            if role == "analyst":
+                payload["response_format"] = {"type": "json_object"}
+            response, meta = antseed_request("/v1/chat/completions", payload)
+            if meta["peer"] != offer["peer"]:
+                raise AntseedError("peer_mismatch", "The response did not identify the selected free peer.")
+            text = ((response.get("choices") or [{}])[0].get("message", {}).get("content") or "")
+            if not isinstance(text, str):
+                raise AntseedError("invalid_response", "The model returned a non-text answer.")
+            text = text.strip()
+            if not text:
+                raise AntseedError("empty_response", "The model returned no visible answer.")
+            if role == "analyst":
+                try:
+                    value = validate_findings(json.loads(text))
+                except ValueError as error:
+                    raise AntseedError("invalid_analysis", "The model did not return usable structured analysis.") from error
+            else:
+                value = text
+            attempts.append({"role": role, "offer": offer, **meta})
+            return value, meta, offer
+        except AntseedError as error:
+            last_error = error
+            attempts.append({"role": role, "offer": offer, "code": error.code, "seconds": round(time.monotonic() - started, 2)})
+            if error.code in {"spend_limit_reached", "connection_failed", "peer_mismatch"} or error.status == 401:
+                break
+    raise last_error or AntseedError("offer_unavailable", "No free offer was available.")
+
+
+def review(issue: str, findings: dict, state: dict, analyst_model: str | None, selected: str | None, has_image: bool, attempts: list, emit) -> dict:
+    prompt = ("Review this draft against the original issue report. Return at most three short plain-text bullet points about genuine contradictions, unsupported assertions, or a useful missing check. "
+              "Suggested checks are proposals, not claims that those events occurred. Do not invent a problem to fill a category. If there is no substantive concern, say so. "
+              + ("An image was supplied to the analyst; you see only its written analysis and must not claim to have inspected the image or that it was not attached. " if has_image else "")
+              + "\nOriginal report:\n" + issue + "\nDraft:\n" + json.dumps(findings))
+    value, meta, offer = run_step(offer_pool(state, "reviewer", selected=selected, avoid_model=analyst_model), prompt, "reviewer", attempts, emit)
+    return {"review": value, "reviewer": meta, "reviewer_offer": offer, "reviewer_model": offer["model"], "review_error": None}
+
+
+def analyze(issue: str, image: str | None, analyst_choice: str | None = None, reviewer_choice: str | None = None, emit=lambda event: None) -> dict:
+    emit({"event": "status", "stage": "discovery"})
     state = available_models()
-    if not state["analyst_model"] or not state["reviewer_model"]:
-        raise RuntimeError("One of the two free models is unavailable right now.")
-    if image_data_url and not state["vision_ready"]:
-        raise RuntimeError("No eligible free image-input model is available right now.")
-    analyst_model = state["vision_analyst_model"] if image_data_url else state["analyst_model"]
-    prompt = (
-        "Analyze this software issue as a careful tester. Return only a JSON object "
-        "with keys summary (string), observed (array of strings), next_checks "
-        "(array of strings), and uncertainty (string). Separate observations "
-        "from guesses. Preserve negations and failure outcomes exactly. "
-        "Never rewrite a reported failure as a success. Issue text:\n" + issue
-    )
-    content: str | list[dict] = prompt
-    if image_data_url:
-        content = [
-            {"type": "text", "text": prompt + "\nUse the attached image as additional evidence."},
-            {"type": "image_url", "image_url": {"url": image_data_url}},
-        ]
-    analyst_peer = state["vision_peer"] if image_data_url else state["free_peers"][analyst_model]
-    first, first_meta = antseed_request(
-        "/v1/chat/completions",
-        {
-            "model": f"{analyst_peer}@{analyst_model}",
-            "messages": [{"role": "user", "content": content}],
-            "response_format": {"type": "json_object"},
-            "max_tokens": 650,
-            "stream": False,
-        },
-    )
-    if first_meta["peer"] != analyst_peer:
-        raise RuntimeError("The response did not identify the selected free provider.")
-    first_text = first["choices"][0]["message"].get("content") or ""
+    prompt = ("Analyze this reported software issue. Return only a JSON object with keys summary (string), observed (array of strings), next_checks (array of strings), and uncertainty (string). "
+              "Distinguish what the user reports from what you verified. Preserve negations and failure outcomes. Do not claim to reproduce the issue. Keep the draft concise.\nIssue:\n" + issue)
+    content = [{"type": "text", "text": prompt}, {"type": "image_url", "image_url": {"url": image}}] if image else prompt
+    attempts = []
+    findings, meta, offer = run_step(offer_pool(state, "analyst", bool(image), analyst_choice), content, "analyst", attempts, emit)
+    result = {"findings": findings, "analyst": meta, "analyst_offer": offer, "analyst_model": offer["model"],
+              "review": "", "reviewer": None, "reviewer_offer": None, "review_error": None,
+              "attempts": attempts, "mode": "live", "completed_at": now()}
+    emit({"event": "analysis", "result": result})
     try:
-        findings = json.loads(first_text)
-    except json.JSONDecodeError:
-        findings = {"raw_response": first_text}
-    review_prompt = (
-        "Review this bug triage for contradictions with the original report, "
-        "unsupported claims, and missing checks. Give at most three short "
-        "plain-text bullet points.\nOriginal report:\n"
-        + issue
-        + "\nTriage:\n"
-        + json.dumps(findings)
-    )
-    review = ""
-    second_meta = None
-    reviewer_used = None
-    for candidate in state["reviewer_candidates"][:2]:
-        second, second_meta = antseed_request(
-            "/v1/chat/completions",
-            {
-                "model": f"{state['free_peers'][candidate]}@{candidate}",
-                "messages": [{"role": "user", "content": review_prompt}],
-                "max_tokens": 700,
-                "stream": False,
-            },
-        )
-        if second_meta["peer"] != state["free_peers"][candidate]:
-            raise RuntimeError("The response did not identify the selected free reviewer.")
-        review = (second["choices"][0]["message"].get("content") or "").strip()
-        reviewer_used = candidate
-        if review:
-            break
-    if not review:
-        review = "The reviewer returned no visible answer. Check its response and try another free model."
-    return {"findings": findings, "review": review, "analyst": first_meta, "reviewer": second_meta, "analyst_model": analyst_model, "reviewer_model": reviewer_used}
+        result.update(review(issue, findings, state, offer["model"], reviewer_choice, bool(image), attempts, emit))
+    except AntseedError as error:
+        result["review_error"] = error.public()
+    result["completed_at"] = now()
+    return result
+
+
+def validate_input(payload: dict) -> tuple[str, str | None]:
+    issue = payload.get("issue", "")
+    image = payload.get("image")
+    if not isinstance(issue, str) or not 12 <= len(issue.strip()) <= 5000:
+        raise ValueError("Describe the issue in 12–5000 characters.")
+    if image:
+        if not isinstance(image, str) or not image.startswith(("data:image/png;base64,", "data:image/jpeg;base64,", "data:image/webp;base64,")):
+            raise ValueError("Choose a PNG, JPEG or WebP image.")
+        try:
+            if len(base64.b64decode(image.split(",", 1)[1], validate=True)) > 1_000_000:
+                raise ValueError("Choose an image under 1 MB.")
+        except (ValueError, base64.binascii.Error) as error:
+            raise ValueError("Choose a valid PNG, JPEG or WebP image under 1 MB.") from error
+    return issue.strip(), image
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -180,42 +247,79 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
-    def send_json(self, status: int, value: dict) -> None:
-        self.send(status, "application/json; charset=utf-8", json.dumps(value).encode())
+    def send_json(self, status: int, data: dict) -> None:
+        self.send(status, "application/json; charset=utf-8", json.dumps(data).encode())
 
     def do_GET(self) -> None:
-        if self.path == "/":
-            self.send(200, "text/html; charset=utf-8", (WEB / "index.html").read_bytes())
-        elif self.path == "/app.js":
-            self.send(200, "text/javascript; charset=utf-8", (WEB / "app.js").read_bytes())
-        elif self.path == "/api/status":
-            try:
+        static = {"/": (WEB / "index.html", "text/html; charset=utf-8"), "/app.js": (WEB / "app.js", "text/javascript"),
+                  "/style.css": (WEB / "style.css", "text/css"), "/sample.png": (ROOT / "evidence/vision-test.png", "image/png")}
+        try:
+            if self.path in static:
+                path, mime = static[self.path]
+                self.send(200, mime, path.read_bytes())
+            elif self.path == "/api/status":
                 self.send_json(200, available_models())
-            except Exception as error:
-                self.send_json(502, {"error": str(error)})
-        else:
-            self.send_json(404, {"error": "Not found"})
+            elif self.path == "/api/recorded":
+                result = json.loads((ROOT / "evidence/workbench-pinned-final.json").read_text())
+                result.update({"mode": "recorded", "captured_date": "2026-11-02"})
+                self.send_json(200, {"issue": "Synthetic test: the export button reports success, but the downloaded file is missing the blue rectangle. Record the failure and suggest one check.", "result": result})
+            else:
+                self.send_json(404, {"error": {"message": "Page not found."}})
+        except AntseedError as error:
+            self.send_json(error.status, {"error": error.public()})
 
     def do_POST(self) -> None:
-        if self.path != "/api/analyze":
-            self.send_json(404, {"error": "Not found"})
+        if self.path not in {"/api/analyze", "/api/review"}:
+            self.send_json(404, {"error": {"message": "Page not found."}})
             return
         try:
             length = int(self.headers.get("Content-Length", "0"))
-            if length > 2_000_000:
-                raise ValueError("Request too large (2 MB maximum).")
+            if not 0 < length <= 2_000_000:
+                raise ValueError("Request must be between 1 byte and 2 MB.")
             payload = json.loads(self.rfile.read(length))
-            issue = str(payload.get("issue", "")).strip()
-            image = payload.get("image")
-            if len(issue) < 12 or len(issue) > 5000:
-                raise ValueError("Describe the issue in 12–5000 characters.")
-            if image and (not isinstance(image, str) or not image.startswith("data:image/")):
-                raise ValueError("The attachment must be an image.")
-            self.send_json(200, analyze(issue, image))
-        except ValueError as error:
-            self.send_json(400, {"error": str(error)})
-        except Exception as error:
-            self.send_json(502, {"error": str(error)})
+            if not isinstance(payload, dict):
+                raise ValueError("Send a JSON object.")
+            issue, image = validate_input(payload)
+            if self.path == "/api/review":
+                validate_findings(payload.get("findings"))
+            for key in ("analyst_choice", "reviewer_choice", "analyst_model"):
+                if payload.get(key) is not None and not isinstance(payload[key], str):
+                    raise ValueError("Select a valid free offer.")
+        except (ValueError, AntseedError) as error:
+            self.send_json(400, {"error": {"code": "invalid_input", "message": str(error)}})
+            return
+        streaming = payload.get("stream") is True
+        if streaming:
+            self.send_response(200)
+            self.send_header("Content-Type", "application/x-ndjson")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Connection", "close")
+            self.end_headers()
+            self.close_connection = True
+
+        def emit(event):
+            if streaming:
+                self.wfile.write((json.dumps(event) + "\n").encode())
+                self.wfile.flush()
+        try:
+            if self.path == "/api/analyze":
+                result = analyze(issue, image, payload.get("analyst_choice"), payload.get("reviewer_choice"), emit)
+            else:
+                attempts = []
+                emit({"event": "status", "stage": "discovery"})
+                result = review(issue, payload["findings"], available_models(), payload.get("analyst_model"), payload.get("reviewer_choice"), bool(payload.get("has_image")), attempts, emit)
+                result.update({"attempts": attempts, "completed_at": now(), "mode": "live"})
+            if streaming:
+                emit({"event": "complete", "result": result})
+            else:
+                self.send_json(200, result)
+        except AntseedError as error:
+            if streaming:
+                emit({"event": "error", "error": error.public()})
+            else:
+                self.send_json(error.status, {"error": error.public()})
+        except (BrokenPipeError, ConnectionResetError):
+            pass
 
 
 if __name__ == "__main__":

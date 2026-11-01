@@ -3,71 +3,43 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Antseed Issue Workbench</title>
-  <style>
-    :root { color-scheme: light; font: 16px/1.5 system-ui, -apple-system, sans-serif; background: #f5f4ef; color: #20231f; }
-    * { box-sizing: border-box; }
-    body { margin: 0; }
-    main { max-width: 860px; margin: 0 auto; padding: 44px 22px 80px; }
-    h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.1; margin: 4px 0 14px; letter-spacing: -.04em; }
-    h2 { font-size: 1.15rem; margin: 0 0 12px; }
-    .eyebrow { color: #36634b; font-size: .78rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
-    .intro { max-width: 680px; color: #535a54; margin: 0 0 24px; }
-    .card { background: #fff; border: 1px solid #ddded8; border-radius: 14px; padding: 22px; margin-top: 18px; box-shadow: 0 7px 22px #20231f0b; }
-    label { display: block; font-weight: 700; margin: 0 0 8px; }
-    textarea { width: 100%; min-height: 175px; padding: 14px; resize: vertical; border: 1px solid #aeb7ae; border-radius: 9px; font: inherit; color: inherit; }
-    textarea:focus, input:focus { outline: 2px solid #3f8060; outline-offset: 2px; }
-    .row { display: flex; gap: 14px; align-items: end; flex-wrap: wrap; margin-top: 17px; }
-    .upload { flex: 1; min-width: 220px; }
-    .upload small, .hint { display: block; color: #646e66; font-weight: 400; font-size: .84rem; margin-top: 5px; }
-    input[type=file] { max-width: 100%; }
-    button { background: #174e33; border: 1px solid #174e33; color: #fff; border-radius: 8px; padding: 11px 19px; font: inherit; font-weight: 700; cursor: pointer; }
-    button:hover { background: #286844; }
-    button:disabled { opacity: .55; cursor: wait; }
-    button.secondary { background: transparent; color: #174e33; padding: 6px 0; border: 0; font-weight: 600; }
-    .status { display: inline-flex; gap: 8px; align-items: center; color: #315c43; font-size: .9rem; font-weight: 650; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: #3f8060; }
-    .error { color: #a0281d; }
-    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-    .result { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; font: 14px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; }
-    .meta { margin: 12px 0 0; color: #637066; font-size: .83rem; }
-    footer { color: #68716a; font-size: .83rem; margin-top: 26px; }
-    @media (max-width: 680px) { .grid { grid-template-columns: 1fr; } main { padding-top: 28px; } }
-  </style>
+  <meta name="description" content="Try a two-model issue review through Antseed, with visible free offers and exportable results.">
+  <title>Issue Workbench · Antseed field study</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+  <a class="skip" href="#issue">Skip to issue input</a>
   <main>
-    <div class="eyebrow">Antseed field test · free models</div>
-    <h1>Issue Workbench</h1>
-    <p class="intro">Describe a software issue and optionally attach a screenshot. One Antseed model organizes the evidence; a second checks the analysis for gaps. This is a test app, so use public or synthetic examples.</p>
-    <div id="availability" class="status"><span class="dot"></span><span>Checking local Antseed buyer…</span></div>
-    <section class="card">
-      <label for="issue">Issue description</label>
-      <textarea id="issue" maxlength="5000" placeholder="What happened? What did you expect? How can someone reproduce it?"></textarea>
-      <button id="example" class="secondary" type="button">Load a public example</button>
-      <div class="row">
-        <div class="upload">
-          <label for="image">Screenshot (optional)</label>
-          <input id="image" type="file" accept="image/*">
-          <small>Up to 1 MB. The image is sent to an Antseed provider.</small>
-        </div>
-        <button id="analyze" type="button">Analyze issue</button>
-      </div>
-      <p id="message" class="hint" role="status"></p>
+    <header class="masthead"><span>Antseed / independent field study</span><a href="https://github.com/divyanshAgarwal123/antseed-issue-workbench" target="_blank" rel="noreferrer">Code &amp; evidence ↗</a></header>
+    <div class="intro"><p class="eyebrow">Report → analysis → second opinion</p><h1>Issue Workbench</h1><p>Turn a reported software problem into observations and next checks. A second model reviews the draft. You decide what holds up.</p></div>
+    <div class="workspace">
+      <section class="compose" aria-labelledby="input-heading">
+        <div class="section-heading"><h2 id="input-heading">1. Describe the issue</h2><span id="characters">0 / 5000</span></div>
+        <div class="examples"><button id="example" class="text-button" type="button">Load demo issue</button><button id="sample-image" class="text-button" type="button">Use sample screenshot</button><button id="recorded" class="text-button" type="button">View recorded run</button></div>
+        <label class="sr-only" for="issue">Issue description</label>
+        <textarea id="issue" maxlength="5000" placeholder="What happened? What did you expect? What have you already checked?"></textarea>
+        <div class="attachment"><div><label for="image">Screenshot <span class="muted">(optional)</span></label><input id="image" type="file" accept="image/png,image/jpeg,image/webp"><small>PNG, JPEG or WebP · up to 1 MB</small></div><div id="image-preview" hidden><img id="preview" alt="Screenshot selected for analysis"><div><span id="image-name"></span><button id="remove-image" class="text-button" type="button">Remove image</button></div></div></div>
+        <div class="submit-row"><button id="analyze" type="button" disabled>Analyze issue</button><span>Public or synthetic input only.<br>Sent to the selected Antseed peers.</span></div>
+      </section>
+      <aside class="routing" aria-labelledby="routing-heading">
+        <div class="section-heading"><h2 id="routing-heading">2. Check the free offers</h2><button id="refresh" class="text-button" type="button">Refresh</button></div>
+        <p id="availability" role="status" aria-live="polite">Checking the local Antseed connection…</p>
+        <label for="analyst-choice">First model · analysis</label><select id="analyst-choice" disabled><option value="">Automatic free selection</option></select><p id="analyst-offer" class="offer-detail">Waiting for the live catalog.</p>
+        <label for="reviewer-choice">Second model · review</label><select id="reviewer-choice" disabled><option value="">Automatic free selection</option></select><p id="reviewer-offer" class="offer-detail">Checks the report and written draft.</p>
+        <p class="routing-note">Offers must advertise $0 input and output, a reputation score of at least 60, and no staking requirement. Automatic selection may try one alternate free offer.</p>
+        <details><summary>Model, peer, buyer—what do they mean?</summary><p>A <strong>model</strong> is the AI you ask. A <strong>peer</strong> serves that model and advertises its price. Your local <strong>buyer</strong> connects to those peers. A <strong>gateway</strong> adds API keys and budgets.</p><p>Each request is pinned to the chosen peer. Model names alone can include both free and paid offers. Prices and availability can change after discovery.</p></details>
+      </aside>
+    </div>
+    <section id="progress" class="progress" hidden aria-live="polite"><ol><li data-stage="discovery">Discover offers</li><li data-stage="analyst">Analyze report</li><li data-stage="reviewer">Review draft</li></ol><div><span id="message">Starting…</span><span id="elapsed">0s</span></div></section>
+    <section id="error" class="notice error" role="alert" hidden><h2 id="error-title"></h2><p id="error-action"></p><dl id="error-limits" hidden></dl><details><summary>Technical details</summary><pre id="error-raw"></pre></details></section>
+    <section id="results" hidden aria-labelledby="results-heading">
+      <div class="results-heading"><div><p id="run-mode" class="eyebrow"></p><h2 id="results-heading">A draft to check against the evidence</h2></div><button id="download" class="secondary" type="button">Download run JSON</button></div>
+      <p id="recorded-note" class="notice" hidden>Recorded example from 2 November 2026. No new model request was made.</p>
+      <div class="results-grid"><article class="analysis-result"><p class="eyebrow">First-model analysis</p><h3 id="summary"></h3><h4>Reported observations</h4><ul id="observed"></ul><h4>Next checks</h4><ol id="next-checks"></ol><div class="uncertainty"><h4>What remains uncertain</h4><p id="uncertainty"></p></div><p id="analyst-meta" class="meta"></p></article>
+        <article class="review-result"><p class="eyebrow">Second-model review</p><h3>A second opinion</h3><p class="muted">Reviews the original report and written draft. It does not inspect the screenshot.</p><div id="review" class="review-text"></div><div id="review-warning" class="notice" hidden><p id="review-error"></p><button id="retry-review" class="text-button" type="button">Retry review only</button></div><p id="reviewer-meta" class="meta"></p></article></div>
+      <details class="raw"><summary>Request details and raw result</summary><p>Includes model names, response peers, attempts and timings. No API key is included.</p><pre id="raw-result"></pre></details>
     </section>
-    <section id="results" class="grid" hidden>
-      <div class="card">
-        <h2>Draft analysis · verify against the report</h2>
-        <pre id="findings" class="result"></pre>
-        <p id="analyst-meta" class="meta"></p>
-      </div>
-      <div class="card">
-        <h2>Second-model review</h2>
-        <pre id="review" class="result"></pre>
-        <p id="reviewer-meta" class="meta"></p>
-      </div>
-    </section>
-    <footer>Runs locally. Model requests go through your Antseed buyer or gateway to independent providers. No input is stored by this app. Model output can be wrong; verify it before acting.</footer>
+    <footer>Runs locally. This app does not save submitted text or images on its server. Independent providers receive model requests. Free offers have quotas; model output can be wrong. <a href="https://github.com/divyanshAgarwal123/antseed-issue-workbench/blob/main/DEMO_GUIDE.md" target="_blank" rel="noreferrer">Demo guide ↗</a></footer>
   </main>
   <script src="/app.js"></script>
 </body>
